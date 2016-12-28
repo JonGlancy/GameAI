@@ -1,29 +1,12 @@
 import math, random, timeit
 
-class Cell:
-	def __init__(self, center, width, height):
-		x,y = center
-		top_left = [x - width/2, y + height/2]
-		bottom_right = [x + width/2, y - height/2]
-		self.members = []
-
-	def addMember(self, member):
-		self.members.append(member)
-
-	def removeMember(self, member):
-		self.members.remove(member)
-
 class CellSpacePartition:
 	def __init__(self, width, height, n):
 		self.width = width
 		self.height = height
 		self.n = n
 
-		self.cells = [[] for _ in xrange(n)]
-		for i in xrange(n):
-			for j in xrange(n):
-				center = (i+0.5)*(width/n), (j+0.5)*(height/n)
-				self.cells[i].append(Cell(center, width/n, height/n))
+		self.cells = [[[] for _ in xrange(n)] for _ in xrange(n)]
 
 	def positionToIndex(self, pos):
 		x, y = pos
@@ -41,13 +24,8 @@ class CellSpacePartition:
 		m_neighbours = []
 		for i in xrange(x_min, x_max+1):
 			for j in xrange(y_min, y_max+1):
-				cell = self.cells[i][j]
-				m_neighbours += cell.members
+				m_neighbours += self.cells[i][j]
 		return m_neighbours
-
-	def getCell(self, pos):
-		i, j = self.positionToIndex(pos)
-		return self.cells[i][j]
 
 class MovingEntity:
 	def __init__(self, pos, grid):
@@ -55,7 +33,7 @@ class MovingEntity:
 		self.grid = grid
 		i,j = self.grid.positionToIndex(pos)
 		self.index = (i,j)
-		self.grid.cells[i][j].addMember(self)
+		self.grid.cells[i][j].append(self)
 
 	def update(self):
 		new_index = self.grid.positionToIndex(self.pos)
@@ -63,8 +41,8 @@ class MovingEntity:
 			old_cell = self.grid.cells[self.index[0]][self.index[1]]
 			new_cell = self.grid.cells[new_index[0]][new_index[1]]
 
-			old_cell.removeMember(self)
-			old_cell.addMember(self)
+			old_cell.remove(self)
+			old_cell.append(self)
 
 if __name__ == '__main__':
 
@@ -97,6 +75,7 @@ if __name__ == '__main__':
 					if dist_squared(agent.pos, other.pos) < radius:
 						total += 1
 			agent.update()
+		print total
 
 	grid = CellSpacePartition(100,100,n_cells)
 
