@@ -1,44 +1,10 @@
 import math
 
-class BoundingBox:
-	def __init__(self, top_left, bottom_right):
-		self.top_left  = top_left
-		self.bottom_right = bottom_right
-	
-	def pointIsInside(self, point):
-		x,y  = point
-		checkX = self.top_left[0] <= x <= self.bottom_right[0]
-		checkY = self.bottom_right[1] <= y <= self.bottom_right[1]
-		if checkX and checkY:
-			return True
-		else:
-			return False
-
-	def boxIsOverlapping(self, other_box):
-		this_left, this_top = self.top_left
-		this_right, this_bottom = self.bottom_right
-
-		other_left, other_top = other_box.top_left
-		other_right, other_bottom = other_box.bottom_right
-
-		check1 = this_left > other_right
-		check2 = this_bottom > other_top
-		check3 = this_right < other_left
-		check4 = this_top < other_bottom
-
-		if check1 or check2 or check3 or check4:
-			#No overlap
-			return False
-		else:
-			return True
-	
-
 class Cell:
 	def __init__(self, center, width, height):
 		x,y = center
 		top_left = [x - width/2, y + height/2]
 		bottom_right = [x+width/2, y-height/2]
-		self.bbox = BoundingBox(top_left, bottom_right)
 		self.members = []
 
 	def addMember(self, member):
