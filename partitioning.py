@@ -66,42 +66,47 @@ class MovingEntity:
 			old_cell.removeMember(self)
 			old_cell.addMember(self)
 
+if __name__ == '__main__':
 
-def dist_squared(vec1, vec2):
-	x1, y1 = vec1
-	x2, y2 = vec2
-	return (x2-x1)**2 + (y2-y1)**2
-grid = CellSpacePartition(100,100,100)
+	n_agents = 2000
+	n_cells  = 10
 
-agents = []
-for _ in xrange(2000):
-	pos = [random.random()*100, random.random()*100]
-	agents.append(MovingEntity(pos, grid))
+	def dist_squared(vec1, vec2):
+		x1, y1 = vec1
+		x2, y2 = vec2
+		return (x2-x1)**2 + (y2-y1)**2
 
+	def test1():
+		total = 0
+		radius = 5
+		for agent in agents:
+			neighbours = agent.grid.getNeighbours(agent.pos, radius)
+			for other in neighbours:
+				if agent!=other:
+					if dist_squared(agent.pos, other.pos) < radius:
+						total += 1
+			agent.update()
+		print total
 
-def test1():
-	total = 0
-	radius = 5
-	for agent in agents:
-		neighbours = agent.grid.getNeighbours(agent.pos, radius)
-		for other in neighbours:
-			if agent!=other:
-				if dist_squared(agent.pos, other.pos) < radius:
-					total += 1
-		agent.update()
-	print total
+	def test0():
+		total = 0
+		radius = 5
+		for agent in agents:
+			for other in agents:
+				if agent!=other:
+					if dist_squared(agent.pos, other.pos) < radius:
+						total += 1
+			agent.update()
 
-def test0():
-	total = 0
-	radius = 5
-	for agent in agents:
-		for other in agents:
-			if agent!=other:
-				if dist_squared(agent.pos, other.pos) < radius:
-					total += 1
-		agent.update()
-repeats = 1
-print str(2000) + ' agents'
-print str(100) + ' grid cells'
-print str(timeit.Timer(test0).timeit(number=repeats)/repeats)+'s without partitioning'
-print str(timeit.Timer(test1).timeit(number=repeats)/repeats)+'s with partitioning'
+	grid = CellSpacePartition(100,100,n_cells)
+
+	agents = []
+	for _ in xrange(n_agents):
+		pos = [random.random()*100, random.random()*100]
+		agents.append(MovingEntity(pos, grid))
+
+	repeats = 1
+	print str(n_agents) + ' agents'
+	print str(n_cells**2) + ' grid cells'
+	print str(timeit.Timer(test0).timeit(number=repeats)/repeats)+'s without partitioning'
+	print str(timeit.Timer(test1).timeit(number=repeats)/repeats)+'s with partitioning'
