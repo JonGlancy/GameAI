@@ -1,10 +1,10 @@
-import math
+import math, random, timeit
 
 class Cell:
 	def __init__(self, center, width, height):
 		x,y = center
 		top_left = [x - width/2, y + height/2]
-		bottom_right = [x+width/2, y-height/2]
+		bottom_right = [x + width/2, y - height/2]
 		self.members = []
 
 	def addMember(self, member):
@@ -24,7 +24,12 @@ class CellSpacePartition:
 			for j in xrange(n):
 				center = (i+0.5)*(width/n), (j+0.5)*(height/n)
 				self.cells[i].append(Cell(center, width/n, height/n))
-				self.cells[i][j].addMember(str(i)+', '+str(j))
+
+	def positionToIndex(self, pos):
+		x, y = pos
+		i = math.floor(x * self.n / self.width)
+		j = math.floor(y * self.n / self.height)
+		return int(i),int(j)
 
 	def getNeighbours(self, pos, radius):
 		x, y = pos
@@ -39,14 +44,64 @@ class CellSpacePartition:
 				cell = self.cells[i][j]
 				m_neighbours += cell.members
 		return m_neighbours
-	
-	def positionToIndex(self, pos):
-		x, y = pos
-		i = math.floor(x * self.n / self.width)
-		j = math.floor(y * self.n / self.height)
-		return int(i),int(j)
+
+	def getCell(self, pos):
+		i, j = self.positionToIndex(pos)
+		return self.cells[i][j]
+
+class MovingEntity:
+	def __init__(self, pos, grid):
+		self.pos = pos
+		self.grid = grid
+		i,j = self.grid.positionToIndex(pos)
+		self.index = (i,j)
+		self.grid.cells[i][j].addMember(self)
+
+	def update(self):
+		new_index = self.grid.positionToIndex(self.pos)
+		if new_index != self.index:
+			old_cell = self.grid.cells[self.index[0]][self.index[1]]
+			new_cell = self.grid.cells[new_index[0]][new_index[1]]
+
+			old_cell.removeMember(self)
+			old_cell.addMember(self)
 
 
-grid = CellSpacePartition(100,100,10)
-neighbours = grid.getNeighbours([20,20],10)
-print neighbours,'-', len(neighbours), 'cells'
+def dist_squared(vec1, vec2):
+	x1, y1 = vec1
+	x2, y2 = vec2
+	return (x2-x1)**2 + (y2-y1)**2
+grid = CellSpacePartition(100,100,100)
+
+agents = []
+for _ in xrange(2000):
+	pos = [random.random()*100, random.random()*100]
+	agents.append(MovingEntity(pos, grid))
+
+
+def test1():
+	total = 0
+	radius = 5
+	for agent in agents:
+		neighbours = agent.grid.getNeighbours(agent.pos, radius)
+		for other in neighbours:
+			if agent!=other:
+				if dist_squared(agent.pos, other.pos) < radius:
+					total += 1
+		agent.update()
+	print total
+
+def test0():
+	total = 0
+	radius = 5
+	for agent in agents:
+		for other in agents:
+			if agent!=other:
+				if dist_squared(agent.pos, other.pos) < radius:
+					total += 1
+		agent.update()
+repeats = 1
+print str(2000) + ' agents'
+print str(100) + ' grid cells'
+print str(timeit.Timer(test0).timeit(number=repeats)/repeats)+'s without partitioning'
+print str(timeit.Timer(test1).timeit(number=repeats)/repeats)+'s with partitioning'
