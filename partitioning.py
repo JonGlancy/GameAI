@@ -27,16 +27,23 @@ class CellSpacePartition:
 				m_neighbours += self.cells[i][j]
 		return m_neighbours
 
-class MovingEntity:
-	def __init__(self, pos, grid):
-		self.pos = pos
+	def addMember(self, entity):
+		i,j = self.positionToIndex(entity.position)
+		entity.index = (i,j)
+		self.cells[i][j].append(entity)
+
+class BaseEntity:
+	def __init__(self, position, grid):
+		self.position = position
 		self.grid = grid
-		i,j = self.grid.positionToIndex(pos)
-		self.index = (i,j)
-		self.grid.cells[i][j].append(self)
+		self.grid.addMember(self)
 
 	def update(self):
-		new_index = self.grid.positionToIndex(self.pos)
+		pass
+
+class MovingEntity(BaseEntity):
+	def update(self):
+		new_index = self.grid.positionToIndex(self.position)
 		if new_index != self.index:
 			old_cell = self.grid.cells[self.index[0]][self.index[1]]
 			new_cell = self.grid.cells[new_index[0]][new_index[1]]
@@ -46,8 +53,8 @@ class MovingEntity:
 
 if __name__ == '__main__':
 
-	n_agents = 2000
-	n_cells  = 10
+	n_agents = 5000
+	n_cells  = 15
 
 	def dist_squared(vec1, vec2):
 		x1, y1 = vec1
@@ -58,13 +65,12 @@ if __name__ == '__main__':
 		total = 0
 		radius = 5
 		for agent in agents:
-			neighbours = agent.grid.getNeighbours(agent.pos, radius)
+			neighbours = agent.grid.getNeighbours(agent.position, radius)
 			for other in neighbours:
 				if agent!=other:
-					if dist_squared(agent.pos, other.pos) < radius:
+					if dist_squared(agent.position, other.position) < radius:
 						total += 1
 			agent.update()
-		print total
 
 	def test0():
 		total = 0
@@ -72,10 +78,9 @@ if __name__ == '__main__':
 		for agent in agents:
 			for other in agents:
 				if agent!=other:
-					if dist_squared(agent.pos, other.pos) < radius:
+					if dist_squared(agent.position, other.position) < radius:
 						total += 1
 			agent.update()
-		print total
 
 	grid = CellSpacePartition(100,100,n_cells)
 
@@ -84,8 +89,9 @@ if __name__ == '__main__':
 		pos = [random.random()*100, random.random()*100]
 		agents.append(MovingEntity(pos, grid))
 
-	repeats = 1
+	repeats = 10
 	print str(n_agents) + ' agents'
 	print str(n_cells**2) + ' grid cells'
-	print str(timeit.Timer(test0).timeit(number=repeats)/repeats)+'s without partitioning'
-	print str(timeit.Timer(test1).timeit(number=repeats)/repeats)+'s with partitioning'
+	a = timeit.Timer(test0).timeit(number=repeats)/repeats
+	b = timeit.Timer(test1).timeit(number=repeats)/repeats
+	print a, b, a/b
