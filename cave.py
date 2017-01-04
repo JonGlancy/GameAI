@@ -4,7 +4,7 @@ class Cave:
 	def __init__(self, width, height):
 		self.width = width
 		self.height = height
-		self.state = [[int(random.random()<0.40) for _ in range(height)] for _ in range(width)]
+		self.state = [[int(random.random()<0.35) for _ in range(height)] for _ in range(width)]
 
 	def __str__(self):
 		board = ''
@@ -63,12 +63,14 @@ class Cave:
 
 	def generate(self):
 		self.state = [[int(random.random()<0.40) for _ in range(self.height)] for _ in range(self.width)]
-		self.phase1(4)
+		self.phase1(15)
 		self.phase2(3)
 
-		
+
 if __name__ == '__main__':
 	cave = Cave(50,50)
 	cave.generate()
-	print cave
+	f = open('sample_cave.txt', 'w')
+	out = cave.__str__()
+	f.write(out)
 
