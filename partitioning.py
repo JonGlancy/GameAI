@@ -53,8 +53,8 @@ class MovingEntity(BaseEntity):
 
 if __name__ == '__main__':
 
-	n_agents = 5000
-	n_cells  = 15
+	n_agents = 1000
+	n_cells  = 10
 
 	def dist_squared(vec1, vec2):
 		x1, y1 = vec1
@@ -94,4 +94,4 @@ if __name__ == '__main__':
 	print str(n_cells**2) + ' grid cells'
 	a = timeit.Timer(test0).timeit(number=repeats)/repeats
 	b = timeit.Timer(test1).timeit(number=repeats)/repeats
-	print a, b, a/b
+	print 'Time taken without partitioning: ' + str(b) + '\nTime taken with partitioning: ' + str(a) + '\nPartitioning was ' + str(a/b) + ' times faster.'
